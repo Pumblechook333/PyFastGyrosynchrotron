@@ -96,6 +96,5 @@ def getMWSlice(Lparms_M, Rparms_M, Parms_M, E_arr, mu_arr, f_arr_M, RL_M):
 
     for i in range(0, Npix):
         res = (res != 0) or (res_M[i] != 0)
-    #del res_M
 
     return res

@@ -43,8 +43,6 @@ def spline_init(x, y, n, yp1, ypn, y2):
     for k in range(n - 2, -1, -1):
         y2[k] = y2[k] * y2[k + 1] + u[k]
 
-    #del u
-
 
 @njit
 def spline_short(x, y, n, y2):
@@ -227,27 +225,27 @@ class Spline2D:
         f_lo = ay * self.f_arr[i1, j1] + by * self.f_arr[i1, j2] + ((ay * ay * ay - ay) * self.f2_yy_arr[i1, j1] + (
                by * by * by - by) * self.f2_yy_arr[i1, j2]) * (hy * hy) / 6.0
         f_y_lo = (self.f_arr[i1, j2] - self.f_arr[i1, j1]) / hy + ((1.0 - 3.0 * ay * ay) * self.f2_yy_arr[i1, j1] + (
-                3.0 * by * by - 1) * self.f2_yy_arr[i1, j2]) * hy / 6.0
+                 3.0 * by * by - 1) * self.f2_yy_arr[i1, j2]) * hy / 6.0
 
         f2_yy_lo = ay * self.f2_yy_arr[i1, j1] + by * self.f2_yy_arr[i1, j2]
         f2_xx_lo = ay * self.f2_xx_arr[i1, j1] + by * self.f2_xx_arr[i1, j2] + ((ay * ay * ay - ay) * self.f4_xxyy_arr[
-            i1, j1] + (by * by * by - by) * self.f4_xxyy_arr[i1, j2]) * (hy * hy) / 6.0
+                   i1, j1] + (by * by * by - by) * self.f4_xxyy_arr[i1, j2]) * (hy * hy) / 6.0
 
         f3_xxy_lo = (self.f2_xx_arr[i1, j2] - self.f2_xx_arr[i1, j1]) / hy + ((1.0 - 3.0 * ay * ay) * self.f4_xxyy_arr[
-            i1, j1] + (3.0 * by * by - 1) * self.f4_xxyy_arr[i1, j2]) * hy / 6.0
+                    i1, j1] + (3.0 * by * by - 1) * self.f4_xxyy_arr[i1, j2]) * hy / 6.0
         f4_xxyy_lo = ay * self.f4_xxyy_arr[i1, j1] + by * self.f4_xxyy_arr[i1, j2]
 
         f_hi = ay * self.f_arr[i2, j1] + by * self.f_arr[i2, j2] + ((ay * ay * ay - ay) * self.f2_yy_arr[i2, j1] + (
-                by * by * by - by) * self.f2_yy_arr[i2, j2]) * (hy * hy) / 6.0
+               by * by * by - by) * self.f2_yy_arr[i2, j2]) * (hy * hy) / 6.0
         f_y_hi = (self.f_arr[i2, j2] - self.f_arr[i2, j1]) / hy + ((1.0 - 3.0 * ay * ay) * self.f2_yy_arr[i2, j1] + (
-                3.0 * by * by - 1) * self.f2_yy_arr[i2, j2]) * hy / 6.0
+                 3.0 * by * by - 1) * self.f2_yy_arr[i2, j2]) * hy / 6.0
 
         f2_yy_hi = ay * self.f2_yy_arr[i2, j1] + by * self.f2_yy_arr[i2, j2]
         f2_xx_hi = ay * self.f2_xx_arr[i2, j1] + by * self.f2_xx_arr[i2, j2] + ((ay * ay * ay - ay) * self.f4_xxyy_arr[
-            i2, j1] + (by * by * by - by) * self.f4_xxyy_arr[i2, j2]) * (hy * hy) / 6.0
+                   i2, j1] + (by * by * by - by) * self.f4_xxyy_arr[i2, j2]) * (hy * hy) / 6.0
 
         f3_xxy_hi = (self.f2_xx_arr[i2, j2] - self.f2_xx_arr[i2, j1]) / hy + ((1.0 - 3.0 * ay * ay) * self.f4_xxyy_arr[
-            i2, j1] + (3.0 * by * by - 1) * self.f4_xxyy_arr[i2, j2]) * hy / 6.0
+                    i2, j1] + (3.0 * by * by - 1) * self.f4_xxyy_arr[i2, j2]) * hy / 6.0
         f4_xxyy_hi = ay * self.f4_xxyy_arr[i2, j1] + by * self.f4_xxyy_arr[i2, j2]
 
         if f:

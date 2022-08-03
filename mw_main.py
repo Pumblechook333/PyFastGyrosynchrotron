@@ -11,7 +11,7 @@ import time
 
 import math
 import numpy as np
-from numba import njit #, jit
+from numba import njit, jit
 
 
 # @njit
@@ -297,20 +297,4 @@ def MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
             RL[i * OutSize + iRL_Le] = Le[0] * Sang
             RL[i * OutSize + iRL_Re] = Re[0] * Sang
 
-        #del jX_loc
-        #del jO_loc
-        #del kX_loc
-        #del kO_loc
-
-    #del jX
-    #del jO
-    #del kX
-    #del kO
-    #del dz
-    #del ne_total
-    #del B
-    #del theta
-
-    #del nu
-
-    #return res
+    return res

@@ -848,7 +848,6 @@ class Std_DF:
 
                         ParmsLoc = np.full(InSize, bigNeg)
 
-                        # np.copyto(ParmsLoc, Parms)
                         ParmsLoc[:] = Parms
 
                         ParmsLoc[i_Emin] = Ecr / eV / 1e6

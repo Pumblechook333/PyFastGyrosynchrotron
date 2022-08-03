@@ -4,7 +4,7 @@ from plasma import EmWave
 from extmath import FindBesselJ, FindBesselJ_WH, qromb, BrentRoot, SecantRoot, trapzdLog, qrombLog, trapzd
 import numpy as np
 from numba.experimental import jitclass
-#from numba import njit
+from numba import njit
 import numba as nb
 import math
 
@@ -12,15 +12,15 @@ import math
 bigNeg = -9.2559631349317831e+61
 
 
-specCashStr = [
-    ('Q', nb.float64[:]),
-    ('f', nb.float64[:]),
-    ('df_dp', nb.float64[:]),
-    ('df_dalpha', nb.float64[:])
-]
+# specCashStr = [
+#     ('Q', nb.float64[:]),
+#     ('f', nb.float64[:]),
+#     ('df_dp', nb.float64[:]),
+#     ('df_dalpha', nb.float64[:])
+# ]
 
 
-@jitclass(specCashStr)
+# @jitclass(specCashStr)
 class CacheStruct:
     """A structure which is capable of accepting and storing information between separate instances of
        Gyrosynchotron Integral (GSI)"""
@@ -45,8 +45,8 @@ class CacheStruct:
 #     ('rom_n', nb.int32),
 #     ('CacheSize', nb.int32)
 # ]
-#
-#
+
+
 # @jitclass(specGSI)
 class GSIntegrand:
     """An object that will describe the behavior of the integration of Gyrosynchotron emission"""
@@ -270,8 +270,6 @@ def GS_jk(w, df, ExactBessel, j, k):
             j[0] *= (4.0 * ((math.pi * e) ** 2) / c * w[0].N * w[0].nu / (1.0 + (w[0].T ** 2)))
             k[0] *= (-4.0 * ((math.pi * e) ** 2) / w[0].N / w[0].nu / (1.0 + (w[0].T ** 2)))
 
-            #del gsi[0].Cache
-
 
 specCashStrA = [
     ('Q', nb.float64[:]),
@@ -330,8 +328,8 @@ class MuSolveFunction:
 #     ('G_loc', nb.float64),
 #     ('p_loc', nb.float64),
 # ]
-#
-#
+
+
 # @jitclass(specGSIA)
 class GSIntegrandApprox:
     """A modified version of the object meant to handle Gyrosynchotron j and k calculations based on a formula of
@@ -563,8 +561,6 @@ def GS_jk_approx(w, df, Npoints, Q_on, j, k):
             j[0] *= (2.0 * math.pi * (e ** 2) * w[0].nu / c / w[0].N / (1.0 + (w[0].T ** 2)) / (w[0].st ** 2))
             k[0] *= (-2.0 * math.pi * (e ** 2) * c / (w[0].N ** 2) / w[0].N / w[0].nu / (1.0 + (w[0].T ** 2)) /
                      (w[0].st ** 2))
-
-            #del gsi[0].Cache
 
 
 # @njit

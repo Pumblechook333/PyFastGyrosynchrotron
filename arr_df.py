@@ -35,8 +35,8 @@ bigNeg = -9.2559631349317831e+61
 #     ('S2', nb.pyobject)
 #
 # ]
-#
-#
+
+
 # @jitclass(specArr)
 class Arr_DF:
     """An object to handle the behaviors of the array distribution function"""
