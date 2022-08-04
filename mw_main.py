@@ -14,7 +14,7 @@ import numpy as np
 from numba import njit, jit
 
 
-# @njit
+# @jit(forceobj=True) #Note does not need jit
 def FindLocalJK(nu, Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, jX, jO, kX, kO, ne_total):
     """Begins the process of finding a localized set of emissivity (j) and absorption (k) coefficients at a particular
        eigen-mode."""
@@ -79,7 +79,7 @@ def FindLocalJK(nu, Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, jX, jO, kX, kO,
 
         ne_total[0] = Parms[i_n0] + nb
 
-        # nu_p = plasma frequency, nu_B = electrons around magnetic field
+        # nu_p - plasma frequency, nu_B - electrons around magnetic field
         nu_p = e * math.sqrt(ne_total[0] / me / math.pi)
         nu_B = e * Parms[i_B] / me / c / (2.0 * math.pi)
         theta = Parms[i_theta] * math.pi / 180
@@ -188,7 +188,20 @@ def RadiationTransfer(nu, Nz, dz, ne, B, theta, jX, jO, kX, kO, Lw, Rw, Ls, Rs, 
             Re[0] = dIX + Re[0] * eX
 
 
-# @njit
+@njit
+def nuRNu(n, Rp, Rl, Nn):
+    if Rp[i_nu0] > 0:
+        n[0] = Rp[i_nu0]
+        dn = math.pow(10.0, Rp[i_dnu])
+        for i in range(1, Nn):
+            n[i] = n[i - 1] * dn
+
+    else:
+        for i in range(0, Nn):
+            n[i] = Rl[i * OutSize + iRL_nu] * 1e9
+
+
+# @njit # Note loops lifted
 def MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
     """Handles the looping and loading of functions FindLocalJK and RadiationTransfer in order to return the final GS
        calculations into the RL results array."""
@@ -199,15 +212,8 @@ def MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
 
     Nnu = Lparms[i_Nnu]
     nu = np.full(Nnu, bigNeg)
-    if Rparms[i_nu0] > 0:
-        nu[0] = Rparms[i_nu0]
-        dnu = math.pow(10.0, Rparms[i_dnu])
-        for i in range(1, Nnu):
-            nu[i] = nu[i - 1] * dnu
 
-    else:
-        for i in range(0, Nnu):
-            nu[i] = RL[i * OutSize + iRL_nu] * 1e9
+    nuRNu(nu, Rparms, RL, Nnu)
 
     Nz = Lparms[i_Nz]
     dz = np.full(Nz, bigNeg)
@@ -268,11 +274,6 @@ def MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
         Le = np.array([bigNeg])
         Re = np.array([bigNeg])
 
-        kO_loc = np.full(Nz, bigNeg)
-        kX_loc = np.full(Nz, bigNeg)
-        jO_loc = np.full(Nz, bigNeg)
-        jX_loc = np.full(Nz, bigNeg)
-
         for i in range(0, Nnu):
             Lw[0] = RL[i * OutSize + iRL_Lw] / Sang
             Rw[0] = RL[i * OutSize + iRL_Rw] / Sang
@@ -281,11 +282,10 @@ def MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
             Le[0] = RL[i * OutSize + iRL_Le] / Sang
             Re[0] = RL[i * OutSize + iRL_Re] / Sang
 
-            for j in range(0, Nz):
-                jX_loc[j] = jX[j][i]
-                jO_loc[j] = jO[j][i]
-                kX_loc[j] = kX[j][i]
-                kO_loc[j] = kO[j][i]
+            jX_loc = jX[:, i]
+            jO_loc = jO[:, i]
+            kX_loc = kX[:, i]
+            kO_loc = kO[:, i]
 
             RadiationTransfer(nu[i], Nz, dz, ne_total, B, theta, jX_loc, jO_loc, kX_loc, kO_loc, Lw, Rw, Ls, Rs, Le, Re)
 

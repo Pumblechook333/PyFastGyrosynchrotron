@@ -774,7 +774,7 @@ class SGAdf:
 # ]
 #
 #
-# @jitclass(specStd)
+# @jitclass(specStd) # NOTE: DOES NOT NEED JIT
 class Std_DF:
     """An object to handle the switching and execution between the analytical Standard Distribution Functions."""
 

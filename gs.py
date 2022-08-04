@@ -31,6 +31,23 @@ class CacheStruct:
         self.df_dalpha = np.array([bigNeg])
 
 
+# NOTE Extracting this math provided a 10s overall slowdown to the code. Why?
+# @njit
+# def F_init(p_zi, N_z, x):
+#     Gi = p_zi * N_z / mc + x
+#     p2i = (mc ** 2) * ((Gi ** 2) - 1.0)
+#     pi = math.sqrt(p2i) if (p2i > 0.0) else 0.0
+#     p_n2i = p2i - (p_zi ** 2)
+#     p_ni = math.sqrt(p_n2i) if (p_n2i > 0.0) else 0.0
+#     cai = p_zi / pi if (p2i > 0.0) else 0.0
+#     sai = p_ni / pi if (p2i > 0.0) else 1.0
+#     betai = pi / Gi / mc
+#     beta_zi = p_zi / Gi / mc
+#     beta_ni = p_ni / Gi / mc
+#
+#     return Gi, pi, p_ni, cai, sai, betai, beta_zi, beta_ni
+
+
 # specGSI = [
 #     ('w', nb.pyobject),
 #     ('df', nb.pyobject),
@@ -47,7 +64,7 @@ class CacheStruct:
 # ]
 
 
-# @jitclass(specGSI)
+# @jitclass(specGSI) Note inner functions lifted
 class GSIntegrand:
     """An object that will describe the behavior of the integration of Gyrosynchotron emission"""
     def __init__(self):
@@ -66,6 +83,8 @@ class GSIntegrand:
 
     def F(self, p_z):
         """The F function belonging to a GS Integrand object"""
+        # G, p, p_n, ca, sa, beta, beta_z, beta_n = F_init(p_z, self.w[0].N_z, self.x)
+
         G = p_z * self.w[0].N_z / mc + self.x
         p2 = (mc ** 2) * ((G ** 2) - 1.0)
         p = math.sqrt(p2) if (p2 > 0.0) else 0.0
@@ -105,6 +124,7 @@ class GSIntegrand:
                          self.w[0].y + 1.0) / 2) ** 2
             else:
                 Q[0] = 0.0
+
             self.df[0].Fp(p, p_z, p_n, f, df_dp, df_dalpha)
 
             if i >= self.CacheSize:
@@ -131,7 +151,19 @@ class GSIntegrand:
 CLK_TCK = 1000
 
 
-# @njit
+@njit
+def EGpParam(Emi, Ema, Gmi, Gma, pmi, pma, ra, rma):
+    if ra > 0:
+        Emi[0] *= (1.0 + 1e-10)
+    if ra < (rma - 1):
+        Ema[0] *= (1.0 - 1e-10)
+
+    Gmi[0] = Emi[0] / mc2 + 1.0  # minimal Lorentz factor
+    Gma[0] = Ema[0] / mc2 + 1.0  # maximal Lorentz factor
+    pmi[0] = mc * math.sqrt((Gmi[0] ** 2) - 1.0)  # minimal impulse
+    pma[0] = mc * math.sqrt((Gma[0] ** 2) - 1.0)  # maximal impulse
+
+# @njit Note loops lifted
 def GS_jk(w, df, ExactBessel, j, k):
     """Calculates one pair of j and k values of solar electrons for a specified set of wave functions"""
 
@@ -167,19 +199,26 @@ def GS_jk(w, df, ExactBessel, j, k):
                     j_loc = 0.0
                     k_loc = 0.0
 
+                    G_min = np.array([bigNeg])
+                    G_max = np.array([bigNeg])
+                    p_min = np.array([bigNeg])
+                    p_max = np.array([bigNeg])
+
                     # calculating the distribution function parameters:
-                    E_min = df.E_x[r]
-                    E_max = df.E_x[r + 1]
+                    E_min = np.array([df.E_x[r]])
+                    E_max = np.array([df.E_x[r + 1]])
 
-                    if r > 0:
-                        E_min *= (1.0 + 1e-10)
-                    if r < (df.N_intervals - 1):
-                        E_max *= (1.0 - 1e-10)
+                    EGpParam(E_min, E_max, G_min, G_max, p_min, p_max, r, df.N_intervals)
 
-                    G_min = E_min / mc2 + 1.0  # minimal Lorentz factor
-                    G_max = E_max / mc2 + 1.0  # maximal Lorentz factor
-                    p_min = mc * math.sqrt((G_min ** 2) - 1.0)  # minimal impulse
-                    p_max = mc * math.sqrt((G_max ** 2) - 1.0)  # maximal impulse
+                    # if r > 0:
+                    #     E_min *= (1.0 + 1e-10)
+                    # if r < (df.N_intervals - 1):
+                    #     E_max *= (1.0 - 1e-10)
+                    #
+                    # G_min = E_min / mc2 + 1.0  # minimal Lorentz factor
+                    # G_max = E_max / mc2 + 1.0  # maximal Lorentz factor
+                    # p_min = mc * math.sqrt((G_min ** 2) - 1.0)  # minimal impulse
+                    # p_max = mc * math.sqrt((G_max ** 2) - 1.0)  # maximal impulse
 
                     p_out = 0
                     j_done = 0
@@ -188,11 +227,7 @@ def GS_jk(w, df, ExactBessel, j, k):
 
                     gsi[0].s = S_MIN
 
-                    watchIter = 0
-
                     while True:
-
-                        watchIter += 1
 
                         gsi[0].x = w[0].nu_B / w[0].nu * gsi[0].s
                         R2 = (w[0].N_z ** 2) + (gsi[0].x - 1.0) * (gsi[0].x + 1.0)
@@ -202,24 +237,24 @@ def GS_jk(w, df, ExactBessel, j, k):
                             p_z2 = mc * (w[0].N_z * gsi[0].x + R) / (1.0 - (w[0].N_z ** 2))
 
                             M = 1
-                            if p_z1 > p_max or p_z2 < (-p_max) or (p_z1 > (-p_min) and p_z2 < p_min):
+                            if p_z1 > p_max[0] or p_z2 < (-p_max[0]) or (p_z1 > (-p_min[0]) and p_z2 < p_min[0]):
                                 M = 0
-                            if p_z1 < (-p_max) and p_z2 > p_max:
+                            if p_z1 < (-p_max[0]) and p_z2 > p_max[0]:
                                 M = 0
                                 if gsi[0].x > 1:
                                     p_out = 1
 
                             if M:
-                                pzx = mc / w[0].N_z * (G_min - gsi[0].x)
-                                if (math.fabs(pzx)) < p_min:
+                                pzx = mc / w[0].N_z * (G_min[0] - gsi[0].x)
+                                if (math.fabs(pzx)) < p_min[0]:
                                     if w[0].N_z > 0:
                                         p_z1 = pzx
                                     else:
                                         p_z2 = pzx
 
-                                pzx = mc / w[0].N_z * (G_max - gsi[0].x)
+                                pzx = mc / w[0].N_z * (G_max[0] - gsi[0].x)
 
-                                if (math.fabs(pzx)) < p_max:
+                                if (math.fabs(pzx)) < p_max[0]:
                                     if w[0].N_z > 0:
                                         p_z2 = pzx
                                     else:
@@ -293,7 +328,7 @@ class CacheStructApprox:
 # ]
 #
 #
-# @jitclass(specMuSol)
+# @jitclass(specMuSol) Note does not need
 class MuSolveFunction:
     """Container for a modified version of a GS Integrand object that will be used to find mu and mu0 for the
         j and k calculations performed using the approximated bessel calculation."""
@@ -330,7 +365,7 @@ class MuSolveFunction:
 # ]
 
 
-# @jitclass(specGSIA)
+# @jitclass(specGSIA) Note does not need
 class GSIntegrandApprox:
     """A modified version of the object meant to handle Gyrosynchotron j and k calculations based on a formula of
         approximated bessel functions. Optimized for speed over accuracy after a certain threshold of complexity
@@ -517,7 +552,7 @@ class GSIntegrandApprox:
             return Q[0] * R[0] if self.mode else Q[0] * f[0]
 
 
-# @njit
+# @njit Note does not need jit
 def GS_jk_approx(w, df, Npoints, Q_on, j, k):
     """Performs the approximated calculations for j and k based on approximated bessel functions."""
     ERR_i = 1e-5
@@ -563,7 +598,7 @@ def GS_jk_approx(w, df, Npoints, Q_on, j, k):
                      (w[0].st ** 2))
 
 
-# @njit
+# @njit Note does not need jit
 def GS_jk_mDF(w, df, ExactBessel, j, k):
     """Calls the exact GS_jk calculation module on every provided df element, and returns the associated j and k
        values for each."""
@@ -573,15 +608,11 @@ def GS_jk_mDF(w, df, ExactBessel, j, k):
 
     df_loc = df
 
-    watchIter = 0
-
     while df_loc[0]:
         j_loc = np.array([bigNeg])
         k_loc = np.array([bigNeg])
 
         GS_jk(w, df_loc[0], ExactBessel, j_loc, k_loc)
-
-        watchIter += 1
 
         j[0] += j_loc[0]
         k[0] += k_loc[0]
@@ -589,7 +620,7 @@ def GS_jk_mDF(w, df, ExactBessel, j, k):
         df_loc = np.roll(df_loc, 1)
 
 
-# @njit
+# @njit Note does not need jit
 def GS_jk_approx_mDF(w, df, Npoints, Q_on, j, k):
     """Calls the approximated GS_jk calculation module on every provided df element, and returns the associated j and k
            values for each."""
@@ -611,7 +642,7 @@ def GS_jk_approx_mDF(w, df, Npoints, Q_on, j, k):
         df_loc = np.roll(df_loc, 1)
 
 
-# @njit
+# @njit Note does not need jit
 def Find_jk_GS(df, nu, Nnu, mode, theta, nu_p, nu_B, nu_cr, nu_cr_WH, Npoints, Q_on, m_on, j, k):
     """Function which handles the organization and filling of the j and k arrays. Performs post-processing on the arrays
        based on provided modification parameters.
@@ -712,6 +743,7 @@ def Find_jk_GS(df, nu, Nnu, mode, theta, nu_p, nu_B, nu_cr, nu_cr_WH, Npoints, Q
             ja = np.array([bigNeg])
             ka = np.array([bigNeg])
             GS_jk_approx_mDF(w, df, Npoints, Q_on, ja, ka)
+
             if ja[0] != 0.0 and ka[0] != 0.0:
                 je = np.array([bigNeg])
                 ke = np.array([bigNeg])
@@ -719,12 +751,9 @@ def Find_jk_GS(df, nu, Nnu, mode, theta, nu_p, nu_B, nu_cr, nu_cr_WH, Npoints, Q
                 mj = je[0] / ja[0]
                 mk = ke[0] / ka[0]
 
-                for i in range(0, Nnu):
-                    tempj[i] *= mj
-                    tempk[i] *= mk
+                tempj *= mj
+                tempk *= mk
 
-    # np.copyto(j, tempj)
-    # np.copyto(k, tempk)
     j[:] = tempj
     k[:] = tempk
 
