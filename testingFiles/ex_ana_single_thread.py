@@ -33,7 +33,6 @@ ParmLocal[16] = 0.2  # \Delta\mu
 
 Parms = np.zeros((24, NSteps), dtype='float', order='F')  # 2D array of input parameters - for multiple voxels
 
-# NOTE - Filling the Parms array follows Fortran row-major (row, column) format.
 for i in range(NSteps):
     Parms[:, i] = ParmLocal  # most of the parameters are the same in all voxels
     Parms[4, i] = 50.0 + 30.0 * i / (NSteps - 1)  # the viewing angle varies from 50 to 80 degrees along the LOS
@@ -45,35 +44,47 @@ RL = RL.flatten('F')
 dummy = np.zeros(1, dtype='float')
 
 res = 0
+profiling = 0
 
-# calculating the emission for analytical distribution (array -> off),
-# the unused parameters can be set to any value
-res = getMW(Lparms, Rparms, Parms, dummy, dummy, dummy, RL)
+if not profiling:
+    # calculating the emission for analytical distribution (array -> off),
+    # the unused parameters can be set to any value
+    res = getMW(Lparms, Rparms, Parms, dummy, dummy, dummy, RL)
 
-RL = RL.reshape((7, Nf), order='F')
+    RL = RL.reshape((7, Nf), order='F')
 
-# retrieving the results (each index is 100 columns)
-f = RL[0]
-I_L = RL[5]
-I_R = RL[6]
+    # retrieving the results (each index is 100 columns)
+    f = RL[0]
+    I_L = RL[5]
+    I_R = RL[6]
 
-print("Entirety of RL: \n", RL, '\n')
-print("f = RL[0] = \n", f, "\n\n I_L = RL[5] = \n", I_L, "\n\n I_R = RL[6] = \n", I_R)
+    print("f = RL[0] = \n", f, "\n\n I_L = RL[5] = \n", I_L, "\n\n I_R = RL[6] = \n", I_R)
 
-# plotting the results
-plt.figure(1)
-plt.plot(f, I_L + I_R)
-plt.xscale('log')
-plt.yscale('log')
-plt.title('Total intensity (analytical)')
-plt.xlabel('Frequency, GHz')
-plt.ylabel('Intensity, sfu')
+    # plotting the results
+    plt.figure(1)
+    plt.plot(f, I_L + I_R)
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.title('Total intensity (analytical)')
+    plt.xlabel('Frequency, GHz')
+    plt.ylabel('Intensity, sfu')
 
-plt.figure(2)
-plt.plot(f, (I_L - I_R) / (I_L + I_R))
-plt.xscale('log')
-plt.title('Circular polarization degree (analytical)')
-plt.xlabel('Frequency, GHz')
-plt.ylabel('Polarization degree')
+    plt.figure(2)
+    plt.plot(f, (I_L - I_R) / (I_L + I_R))
+    plt.xscale('log')
+    plt.title('Circular polarization degree (analytical)')
+    plt.xlabel('Frequency, GHz')
+    plt.ylabel('Polarization degree')
 
-plt.show()
+    plt.show()
+else:
+    import cProfile
+    import pstats
+    from pstats import SortKey
+
+    cProfile.run("getMW(Lparms, Rparms, Parms, dummy, dummy, dummy, RL)", "thirtyRunStats")
+
+    p = pstats.Stats('thirtyRunStats')
+    p.strip_dirs().sort_stats(SortKey.TIME).print_stats(30)
+
+
