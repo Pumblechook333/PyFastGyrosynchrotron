@@ -1,7 +1,7 @@
 from extmath import ExpBesselK, qromb, Erf
 
-from interface_header import *
-from plasma_header import *
+from interface_vars import *
+from plasma_vars import *
 
 import math
 import numpy as np
@@ -567,17 +567,6 @@ class ELCdf:  # 2
             return -(1.0 if (mu > 0) else (-1.0 if (mu < 0) else 0)) / self.dmu
 
 
-specGAU = [
-    ('B', nb.float64),
-    ('alpha_c', nb.float64),
-    ('mu_c', nb.float64),
-    ('dmu', nb.float64),
-
-    ('EPS_mu0', nb.float64)
-]
-
-
-#@jitclass(specGAU)
 class GAUdf:
     """Describes the Gaussian distribution of electrons over pitch angle."""
 
@@ -761,20 +750,6 @@ class SGAdf:
         return -2.0 * (mu - self.mu_c) * (1.0 + 2.0 * self.a4 * d2) / (self.dmu ** 2)
 
 
-# specStd = [
-#     ('N_intervals', nb.int64),
-#     ('E_x', nb.float64[:]),
-#     ('logscale', nb.float64[:]),
-#     ('nb', nb.float64),
-#
-#     ('EPS_mu0', nb.float64),
-#     ('PK_on', nb.int32),
-#     ('F1', nb.pyobject),
-#     ('F2', nb.pyobject)
-# ]
-#
-#
-# @jitclass(specStd) # NOTE: DOES NOT NEED JIT
 class Std_DF:
     """An object to handle the switching and execution between the analytical Standard Distribution Functions."""
 

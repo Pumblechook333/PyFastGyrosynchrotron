@@ -1,5 +1,5 @@
-from interface_header import *
-from plasma_header import *
+from interface_vars import *
+from plasma_vars import *
 
 from std_df import Std_DF
 from arr_df import Arr_DF
@@ -11,10 +11,9 @@ import time
 
 import math
 import numpy as np
-from numba import njit, jit
+from numba import njit
 
 
-# @jit(forceobj=True) #Note does not need jit
 def FindLocalJK(nu, Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, jX, jO, kX, kO, ne_total):
     """Begins the process of finding a localized set of emissivity (j) and absorption (k) coefficients at a particular
        eigen-mode."""
@@ -201,7 +200,6 @@ def nuRNu(n, Rp, Rl, Nn):
             n[i] = Rl[i * OutSize + iRL_nu] * 1e9
 
 
-# @njit # Note loops lifted
 def MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
     """Handles the looping and loading of functions FindLocalJK and RadiationTransfer in order to return the final GS
        calculations into the RL results array."""

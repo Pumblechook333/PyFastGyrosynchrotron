@@ -1,8 +1,7 @@
 from mw_main import MW_Transfer
 import numpy as np
-#from numba import njit
 from plasma import FindIonizationsSolar
-from interface_header import *
+from interface_vars import *
 import multiprocessing as mp
 
 

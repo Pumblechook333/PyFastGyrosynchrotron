@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from numba.experimental import jitclass
-from numba import njit #, jit
+from numba import njit
 import numba as nb
 
 # USED TO INSTANCE ALL NUMERICAL POINTERS
@@ -556,16 +556,8 @@ def polint(xa, ya, n, x, y, dy):
         ns -= 1
         y[0] += dy[0]
 
-# @njit
-# def bitwise_it(n_, it_):
-#     for j in range(1, (n_ - 1)):
-#         it_ <<= 1
-#
-#     return it_
-
 
 # Adapted from http://astro.uni-tuebingen.de/software/idl/astrolib/math/trapzd.html
-# @njit #Note not needed
 def trapzdQ(F, a, b, n, s):
     """
     Compute the nth stage of refinement of an extended trapezoidal rule.
@@ -609,7 +601,6 @@ romK = 6
 
 # Adapted from https://www.l3harrisgeospatial.com/docs/
 # qromb.html#:~:text=The%20QROMB%20function%20evaluates%20the,%2C%20B%5D%20using%20Romberg%20integration.
-# @njit
 def qromb(F, a, b, EPS, err):
     """
     Evaluates the integral of a function over the closed interval [a, b] using Romberg integration.
@@ -656,7 +647,6 @@ def qromb(F, a, b, EPS, err):
 
 
 # Adapted from http://astro.uni-tuebingen.de/software/idl/astrolib/math/trapzd.html
-# @njit
 def trapzd(F, a, b, N):
     """
     Compute the nth stage of refinement of an extended trapezoidal rule.
@@ -681,12 +671,6 @@ def trapzd(F, a, b, N):
     return s * dx
 
 
-# specIntFunLog = [
-#     ('oldF', nb.pyobject)
-# ]
-#
-#
-# @jitclass(specIntFunLog)
 class IntegrableFunctionLog:
     """Kernel for handling the setting a function object on a logarithmic scale."""
 
@@ -715,7 +699,6 @@ def qrombLog(F, a, b, EPS, err):
     return qromb(ifl, math.log(a), math.log(b), EPS, err)
 
 
-# @njit
 def trapzdLog(F, a, b, N):
     """Calls the trapzd refinement method on a function object f modified onto a logarithmic scale.
 
@@ -819,7 +802,6 @@ def ErfC(x):
     return ans if (x >= 0.0) else (2.0 - ans)
 
 
-# @njit
 def SecantRoot(F, x1, x2, EPS):
     """
     A method which uses a succession of roots of secant lines to better approximate a root of function f
@@ -861,7 +843,6 @@ def SecantRoot(F, x1, x2, EPS):
     return rts if (j < MAXIT) else dNaN
 
 
-# @njit
 def BrentRoot(F, x1, x2, tol):
     """
     A hybrid root-finding algorithm combining the bisection, secant, and inverse quadratic interpolation methods.
