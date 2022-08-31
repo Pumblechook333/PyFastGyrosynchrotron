@@ -1,5 +1,5 @@
 import time
-from plasma_header import *
+from plasma_vars import *
 from plasma import EmWave
 from extmath import FindBesselJ, FindBesselJ_WH, qromb, BrentRoot, SecantRoot, trapzdLog, qrombLog, trapzd
 import numpy as np
@@ -12,15 +12,6 @@ import math
 bigNeg = -9.2559631349317831e+61
 
 
-# specCashStr = [
-#     ('Q', nb.float64[:]),
-#     ('f', nb.float64[:]),
-#     ('df_dp', nb.float64[:]),
-#     ('df_dalpha', nb.float64[:])
-# ]
-
-
-# @jitclass(specCashStr)
 class CacheStruct:
     """A structure which is capable of accepting and storing information between separate instances of
        Gyrosynchotron Integral (GSI)"""
@@ -32,40 +23,6 @@ class CacheStruct:
         self.df_dalpha = np.array([bigNeg])
 
 
-# NOTE Extracting this math provided a 10s overall slowdown to the code.
-# @njit
-# def F_init(p_zi, N_z, x):
-#     Gi = p_zi * N_z / mc + x
-#     p2i = (mc ** 2) * ((Gi ** 2) - 1.0)
-#     pi = math.sqrt(p2i) if (p2i > 0.0) else 0.0
-#     p_n2i = p2i - (p_zi ** 2)
-#     p_ni = math.sqrt(p_n2i) if (p_n2i > 0.0) else 0.0
-#     cai = p_zi / pi if (p2i > 0.0) else 0.0
-#     sai = p_ni / pi if (p2i > 0.0) else 1.0
-#     betai = pi / Gi / mc
-#     beta_zi = p_zi / Gi / mc
-#     beta_ni = p_ni / Gi / mc
-#
-#     return Gi, pi, p_ni, cai, sai, betai, beta_zi, beta_ni
-
-
-# specGSI = [
-#     ('w', nb.pyobject),
-#     ('df', nb.pyobject),
-#     ('ExactBessel', nb.int32),
-#
-#     ('s', nb.int64),
-#     ('mode', nb.int32),
-#     ('x', nb.float64),
-#
-#     ('Cache', nb.pyobject),
-#     ('rom_count', nb.int32),
-#     ('rom_n', nb.int32),
-#     ('CacheSize', nb.int32)
-# ]
-
-
-# @jitclass(specGSI) Note inner functions lifted
 class GSIntegrand:
     """An object that will describe the behavior of the integration of Gyrosynchotron emission"""
 
@@ -153,20 +110,6 @@ class GSIntegrand:
 CLK_TCK = 1000
 
 
-@njit
-def EGpParam(Emi, Ema, Gmi, Gma, pmi, pma, ra, rma):
-    if ra > 0:
-        Emi[0] *= (1.0 + 1e-10)
-    if ra < (rma - 1):
-        Ema[0] *= (1.0 - 1e-10)
-
-    Gmi[0] = Emi[0] / mc2 + 1.0  # minimal Lorentz factor
-    Gma[0] = Ema[0] / mc2 + 1.0  # maximal Lorentz factor
-    pmi[0] = mc * math.sqrt((Gmi[0] ** 2) - 1.0)  # minimal impulse
-    pma[0] = mc * math.sqrt((Gma[0] ** 2) - 1.0)  # maximal impulse
-
-
-# @njit Note loops lifted
 def GS_jk(w, df, ExactBessel, j, k):
     """Calculates one pair of j and k values of solar electrons for a specified set of wave functions"""
 
@@ -321,12 +264,6 @@ class CacheStructApprox:
         self.R = np.array([bigNeg])
 
 
-# specMuSol = [
-#     ('gsi', nb.pyobject)
-# ]
-#
-#
-# @jitclass(specMuSol) Note does not need
 class MuSolveFunction:
     """Container for a modified version of a GS Integrand object that will be used to find mu and mu0 for the
         j and k calculations performed using the approximated bessel calculation."""
@@ -338,32 +275,6 @@ class MuSolveFunction:
         return h
 
 
-# specGSIA = [
-#     ('w', nb.pyobject),
-#     ('df', nb.pyobject),
-#
-#     ('Q_on', nb.int32),
-#     ('Q_corr', nb.int32),
-#     ('mode', nb.int32),
-#
-#     ('mu_list', nb.float64[:]),
-#     ('lnQ1_list', nb.float64[:]),
-#     ('mflag', nb.int32),
-#
-#
-#     ('Cache', nb.pyobject),
-#     ('rom_count', nb.int32),
-#     ('rom_n', nb.int32),
-#     ('CacheSize', nb.int32),
-#
-#     ('E_loc', nb.float64),
-#     ('beta_loc', nb.float64),
-#     ('G_loc', nb.float64),
-#     ('p_loc', nb.float64),
-# ]
-
-
-# @jitclass(specGSIA) Note does not need
 class GSIntegrandApprox:
     """A modified version of the object meant to handle Gyrosynchotron j and k calculations based on a formula of
         approximated bessel functions. Optimized for speed over accuracy after a certain threshold of complexity
@@ -550,7 +461,6 @@ class GSIntegrandApprox:
             return Q[0] * R[0] if self.mode else Q[0] * f[0]
 
 
-# @njit Note does not need jit
 def GS_jk_approx(w, df, Npoints, Q_on, j, k):
     """Performs the approximated calculations for j and k based on approximated bessel functions."""
     ERR_i = 1e-5
@@ -596,7 +506,6 @@ def GS_jk_approx(w, df, Npoints, Q_on, j, k):
                      (w[0].st ** 2))
 
 
-# @njit Note does not need jit
 def GS_jk_mDF(w, df, ExactBessel, j, k):
     """Calls the exact GS_jk calculation module on every provided df element, and returns the associated j and k
        values for each."""
@@ -618,7 +527,6 @@ def GS_jk_mDF(w, df, ExactBessel, j, k):
         df_loc = np.roll(df_loc, 1)
 
 
-# @njit Note does not need jit
 def GS_jk_approx_mDF(w, df, Npoints, Q_on, j, k):
     """Calls the approximated GS_jk calculation module on every provided df element, and returns the associated j and k
            values for each."""
@@ -640,7 +548,6 @@ def GS_jk_approx_mDF(w, df, Npoints, Q_on, j, k):
         df_loc = np.roll(df_loc, 1)
 
 
-# @njit Note does not need jit
 def Find_jk_GS(df, nu, Nnu, mode, theta, nu_p, nu_B, nu_cr, nu_cr_WH, Npoints, Q_on, m_on, j, k):
     """Function which handles the organization and filling of the j and k arrays. Performs post-processing on the arrays
        based on provided modification parameters.

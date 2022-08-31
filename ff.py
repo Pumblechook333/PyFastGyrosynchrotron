@@ -1,4 +1,4 @@
-from plasma_header import *
+from plasma_vars import *
 
 from plasma import EmWave
 from coulomb import lnC1
@@ -24,7 +24,6 @@ def ZmeanOld(T0):
     return 1.146 if (T0 > 3.5e4) else 1.0
 
 
-# @njit
 def FF_jk_Maxwell(w, ne, T0, ab, j, k):
     """
     For when kappa is infinite, this method approximates the gyrosynchotron regime for isotropic power-law energy
@@ -109,7 +108,6 @@ def FF_jk_kappa(w, ne, T0, kappa, ab, j, k):  # ///
         j[0] = jFF * w[0].Zfactor
 
 
-# @njit Note does not need
 def Find_jk_FFei(ne, T0, nu_p, nu_B, theta, kappa, abcode, sigma, nu, j, k):
     """
     The correct operations to perform on GS j and k values when the parameter e-ions flag is turned on.

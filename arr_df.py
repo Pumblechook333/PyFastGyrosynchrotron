@@ -1,43 +1,14 @@
-from plasma_header import *
-from interface_header import *
+from plasma_vars import *
+from interface_vars import *
 
 from extmath import IntTabulated, IntTabulatedLog, LQInterpolate, LQInterpolate2D, Spline, Spline2D
 
 import math
 import numpy as np
-from numba.experimental import jitclass
-import numba as nb
 
 bigNeg = -9.2559631349317831e+61
 
 
-# specArr = [
-#     ('N_intervals', nb.int64),
-#     ('E_x', nb.float64[:]),
-#     ('logscale', nb.float64[:]),
-#     ('nb', nb.float64),
-#
-#     ('EPS_mu0', nb.float64),
-#     ('PK_on', nb.int32),
-#     ('NE', nb.int64),
-#     ('Nmu', nb.int64),
-#
-#     ('E_arr', nb.float64[:]),
-#     ('mu_arr', nb.float64[:]),
-#     ('f_avg', nb.float64[:]),
-#     ('f_arr', nb.float64[:]),
-#
-#     ('log_on', nb.int32),
-#     ('iso_on', nb.int32),
-#     ('LQ_on', nb.int32),
-#
-#     ('S1', nb.pyobject),
-#     ('S2', nb.pyobject)
-#
-# ]
-
-
-# @jitclass(specArr)
 class Arr_DF:
     """An object to handle the behaviors of the array distribution function"""
 

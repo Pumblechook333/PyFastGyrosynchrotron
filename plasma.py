@@ -1,4 +1,4 @@
-from plasma_header import *
+from plasma_vars import *
 
 import math
 import numpy as np

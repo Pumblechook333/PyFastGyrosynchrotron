@@ -1,7 +1,7 @@
 # Computation of the thermally averaged Gaunt factor and the corresponding Coulomb logarithm (for a hydrogen-like atom),
 # according to the method and data presented in the paper of van Hoof et al. (MNRAS, 444, 420, 2014).
 
-from plasma_header import *
+from plasma_vars import *
 from extmath import InterpolateBilinear
 
 import math as math
