@@ -226,7 +226,6 @@ def MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
 
     err = 0
 
-    # Debugging timer
     t1 = t2 = tTot = 0
 
     for i in range(0, Nz):
@@ -240,11 +239,10 @@ def MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
             ne_total1 = np.roll(ne_total, -i)
             f_arr1 = np.roll(f_arr, -(i * Lparms[i_NE] * Lparms[i_Nmu]))
 
-            # # Time elapsed between findLocalJK run
+            # Time elapsed between findLocalJK run
             td = t2 - t1
             tTot += td
 
-            # Timing
             print("Performing FindLocalJK ", i, " / ", Nz)
             print("Time Elapsed: ", td, " s \n")
             t1 = time.perf_counter()

@@ -598,7 +598,6 @@ class GAUdf:
             f[0] = self.B
             f_mu[0] = 0.0
 
-            # Note change to account for g1, g2 = 0
             if g1 != 0:
                 g1[0] = 0.0
             if g2 != 0:

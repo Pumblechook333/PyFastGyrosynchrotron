@@ -4,7 +4,6 @@ from plasma import EmWave
 from extmath import FindBesselJ, FindBesselJ_WH, qromb, BrentRoot, SecantRoot, trapzdLog, qrombLog, trapzd
 import numpy as np
 from numba.experimental import jitclass
-from numba import njit
 import numba as nb
 import math
 
@@ -42,7 +41,6 @@ class GSIntegrand:
 
     def F(self, p_z):
         """The F function belonging to a GS Integrand object"""
-        # G, p, p_n, ca, sa, beta, beta_z, beta_n = F_init(p_z, self.w[0].N_z, self.x)
 
         G = p_z * self.w[0].N_z / mc + self.x
         p2 = (mc ** 2) * ((G ** 2) - 1.0)
@@ -148,8 +146,6 @@ def GS_jk(w, df, ExactBessel, j, k):
                     # calculating the distribution function parameters:
                     E_min = df.E_x[r]
                     E_max = df.E_x[r + 1]
-
-                    # EGpParam(E_min, E_max, G_min, G_max, p_min, p_max, r, df.N_intervals)
 
                     if r > 0:
                         E_min *= (1.0 + 1e-10)
@@ -558,8 +554,6 @@ def Find_jk_GS(df, nu, Nnu, mode, theta, nu_p, nu_B, nu_cr, nu_cr_WH, Npoints, Q
        Calculations to be performed on j and k values corresponding to a value of nu lower than the critical point
        (nu_cr) are found exactly, while j and k calculations corresponding to a higher nu are handled approximately."""
 
-    # t1 = t2 = 0
-
     tempj = np.full(np.shape(j), bigNeg)
     tempk = np.full(np.shape(k), bigNeg)
 
@@ -572,27 +566,14 @@ def Find_jk_GS(df, nu, Nnu, mode, theta, nu_p, nu_B, nu_cr, nu_cr_WH, Npoints, Q
 
         w = np.array([EmWave(nu[i], theta, mode, nu_p, nu_B, 1, 0)])
 
-        # Time elapsed between GS_jk run
-        # td = t2 - t1
-
         if nu[i] > nu_cr:
-            # # Debugging Purposes
-            # print("Performing GS_jk_approx_mDF ", i, " / ", Nnu, " || Time Elapsed: ", td, " s")
             print("Performing GS_jk_approx_mDF ", i, " / ", Nnu)
-
-            # t1 = time.perf_counter()
 
             GS_jk_approx_mDF(w, df, Npoints, Q_on, tempj, tempk)
         else:
-            # # Debugging Purposes
-            # print("Performing GS_JK_mDF ", i, " / ", Nnu, " || Time Elapsed: ", td, " s")
             print("Performing GS_JK_mDF ", i, " / ", Nnu)
 
-            # t1 = time.perf_counter()
-
             GS_jk_mDF(w, df, nu[i] < nu_cr_WH, tempj, tempk)
-
-        # t2 = time.perf_counter()
 
         tempj = np.roll(tempj, i)
         tempk = np.roll(tempk, i)
