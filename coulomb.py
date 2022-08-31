@@ -8,7 +8,7 @@ import math as math
 import numpy as np
 from numba import njit
 
-dNaN = np.inf  # will be changed to huge double val
+dNaN = np.inf
 
 N_u = 146  # number of grid points in u direction
 N_g2 = 81  # number of grid points in gam2 direction

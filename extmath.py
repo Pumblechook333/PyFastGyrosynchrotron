@@ -6,7 +6,7 @@ import numba as nb
 
 # USED TO INSTANCE ALL NUMERICAL POINTERS
 bigNeg = -9.2559631349317831e+61
-dNaN = np.inf  # will be changed to huge double val
+dNaN = np.inf
 JMAX = 20
 
 
@@ -575,8 +575,6 @@ def trapzdQ(F, a, b, n, s):
 
     else:
         it = 1
-
-        # it = bitwise_it(n, it)
 
         for j in range(1, (n - 1)):
             it <<= 1
