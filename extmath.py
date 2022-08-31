@@ -556,9 +556,16 @@ def polint(xa, ya, n, x, y, dy):
         ns -= 1
         y[0] += dy[0]
 
+# @njit
+# def bitwise_it(n_, it_):
+#     for j in range(1, (n_ - 1)):
+#         it_ <<= 1
+#
+#     return it_
+
 
 # Adapted from http://astro.uni-tuebingen.de/software/idl/astrolib/math/trapzd.html
-# @njit
+# @njit #Note not needed
 def trapzdQ(F, a, b, n, s):
     """
     Compute the nth stage of refinement of an extended trapezoidal rule.
@@ -576,6 +583,9 @@ def trapzdQ(F, a, b, n, s):
 
     else:
         it = 1
+
+        # it = bitwise_it(n, it)
+
         for j in range(1, (n - 1)):
             it <<= 1
 

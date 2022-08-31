@@ -109,7 +109,7 @@ def FF_jk_kappa(w, ne, T0, kappa, ab, j, k):  # ///
         j[0] = jFF * w[0].Zfactor
 
 
-# @njit
+# @njit Note does not need
 def Find_jk_FFei(ne, T0, nu_p, nu_B, theta, kappa, abcode, sigma, nu, j, k):
     """
     The correct operations to perform on GS j and k values when the parameter e-ions flag is turned on.

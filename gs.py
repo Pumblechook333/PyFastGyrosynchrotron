@@ -24,6 +24,7 @@ bigNeg = -9.2559631349317831e+61
 class CacheStruct:
     """A structure which is capable of accepting and storing information between separate instances of
        Gyrosynchotron Integral (GSI)"""
+
     def __init__(self):
         self.Q = np.array([bigNeg])
         self.f = np.array([bigNeg])
@@ -31,7 +32,7 @@ class CacheStruct:
         self.df_dalpha = np.array([bigNeg])
 
 
-# NOTE Extracting this math provided a 10s overall slowdown to the code. Why?
+# NOTE Extracting this math provided a 10s overall slowdown to the code.
 # @njit
 # def F_init(p_zi, N_z, x):
 #     Gi = p_zi * N_z / mc + x
@@ -67,6 +68,7 @@ class CacheStruct:
 # @jitclass(specGSI) Note inner functions lifted
 class GSIntegrand:
     """An object that will describe the behavior of the integration of Gyrosynchotron emission"""
+
     def __init__(self):
         self.w = np.array([None])
         self.df = np.array([None])
@@ -163,6 +165,7 @@ def EGpParam(Emi, Ema, Gmi, Gma, pmi, pma, ra, rma):
     pmi[0] = mc * math.sqrt((Gmi[0] ** 2) - 1.0)  # minimal impulse
     pma[0] = mc * math.sqrt((Gma[0] ** 2) - 1.0)  # maximal impulse
 
+
 # @njit Note loops lifted
 def GS_jk(w, df, ExactBessel, j, k):
     """Calculates one pair of j and k values of solar electrons for a specified set of wave functions"""
@@ -199,26 +202,21 @@ def GS_jk(w, df, ExactBessel, j, k):
                     j_loc = 0.0
                     k_loc = 0.0
 
-                    G_min = np.array([bigNeg])
-                    G_max = np.array([bigNeg])
-                    p_min = np.array([bigNeg])
-                    p_max = np.array([bigNeg])
-
                     # calculating the distribution function parameters:
-                    E_min = np.array([df.E_x[r]])
-                    E_max = np.array([df.E_x[r + 1]])
+                    E_min = df.E_x[r]
+                    E_max = df.E_x[r + 1]
 
-                    EGpParam(E_min, E_max, G_min, G_max, p_min, p_max, r, df.N_intervals)
+                    # EGpParam(E_min, E_max, G_min, G_max, p_min, p_max, r, df.N_intervals)
 
-                    # if r > 0:
-                    #     E_min *= (1.0 + 1e-10)
-                    # if r < (df.N_intervals - 1):
-                    #     E_max *= (1.0 - 1e-10)
-                    #
-                    # G_min = E_min / mc2 + 1.0  # minimal Lorentz factor
-                    # G_max = E_max / mc2 + 1.0  # maximal Lorentz factor
-                    # p_min = mc * math.sqrt((G_min ** 2) - 1.0)  # minimal impulse
-                    # p_max = mc * math.sqrt((G_max ** 2) - 1.0)  # maximal impulse
+                    if r > 0:
+                        E_min *= (1.0 + 1e-10)
+                    if r < (df.N_intervals - 1):
+                        E_max *= (1.0 - 1e-10)
+
+                    G_min = E_min / mc2 + 1.0  # minimal Lorentz factor
+                    G_max = E_max / mc2 + 1.0  # maximal Lorentz factor
+                    p_min = mc * math.sqrt((G_min ** 2) - 1.0)  # minimal impulse
+                    p_max = mc * math.sqrt((G_max ** 2) - 1.0)  # maximal impulse
 
                     p_out = 0
                     j_done = 0
@@ -237,24 +235,24 @@ def GS_jk(w, df, ExactBessel, j, k):
                             p_z2 = mc * (w[0].N_z * gsi[0].x + R) / (1.0 - (w[0].N_z ** 2))
 
                             M = 1
-                            if p_z1 > p_max[0] or p_z2 < (-p_max[0]) or (p_z1 > (-p_min[0]) and p_z2 < p_min[0]):
+                            if p_z1 > p_max or p_z2 < (-p_max) or (p_z1 > (-p_min) and p_z2 < p_min):
                                 M = 0
-                            if p_z1 < (-p_max[0]) and p_z2 > p_max[0]:
+                            if p_z1 < (-p_max) and p_z2 > p_max:
                                 M = 0
                                 if gsi[0].x > 1:
                                     p_out = 1
 
                             if M:
-                                pzx = mc / w[0].N_z * (G_min[0] - gsi[0].x)
-                                if (math.fabs(pzx)) < p_min[0]:
+                                pzx = mc / w[0].N_z * (G_min - gsi[0].x)
+                                if (math.fabs(pzx)) < p_min:
                                     if w[0].N_z > 0:
                                         p_z1 = pzx
                                     else:
                                         p_z2 = pzx
 
-                                pzx = mc / w[0].N_z * (G_max[0] - gsi[0].x)
+                                pzx = mc / w[0].N_z * (G_max - gsi[0].x)
 
-                                if (math.fabs(pzx)) < p_max[0]:
+                                if (math.fabs(pzx)) < p_max:
                                     if w[0].N_z > 0:
                                         p_z2 = pzx
                                     else:

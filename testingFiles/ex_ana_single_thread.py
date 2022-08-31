@@ -33,7 +33,6 @@ ParmLocal[16] = 0.2  # \Delta\mu
 
 Parms = np.zeros((24, NSteps), dtype='float', order='F')  # 2D array of input parameters - for multiple voxels
 
-# NOTE - Filling the Parms array follows Fortran row-major (row, column) format.
 for i in range(NSteps):
     Parms[:, i] = ParmLocal  # most of the parameters are the same in all voxels
     Parms[4, i] = 50.0 + 30.0 * i / (NSteps - 1)  # the viewing angle varies from 50 to 80 degrees along the LOS
@@ -45,7 +44,7 @@ RL = RL.flatten('F')
 dummy = np.zeros(1, dtype='float')
 
 res = 0
-profiling = 1
+profiling = 0
 
 if not profiling:
     # calculating the emission for analytical distribution (array -> off),
@@ -59,7 +58,6 @@ if not profiling:
     I_L = RL[5]
     I_R = RL[6]
 
-    print("Entirety of RL: \n", RL, '\n')
     print("f = RL[0] = \n", f, "\n\n I_L = RL[5] = \n", I_L, "\n\n I_R = RL[6] = \n", I_R)
 
     # plotting the results

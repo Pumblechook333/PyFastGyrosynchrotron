@@ -37,7 +37,6 @@ def getMW(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL):
 
         tempParms = np.roll(p, i*InSize)
 
-    # np.copyto(Parms, tempParms)
     Parms[:] = tempParms
 
     res = MW_Transfer(Lparms, Rparms, Parms, E_arr, mu_arr, f_arr, RL)
