@@ -1,7 +1,7 @@
-# PyFastGyrosynchotron
+# PyFastGyrosynchrotron
   Sabastian Fernandes | NJIT Applied Physics Undergraduate | Summer 2021 - Summer 2022
 
-- Fast codes for computing gyrosynchotron radio emission, written in python. Adapted from here: https://github.com/kuznetsov-radio/gyrosynchrotron
+- Fast codes for computing gyrosynchrotron radio emission, written in python. Adapted from here: https://github.com/kuznetsov-radio/gyrosynchrotron
 - All mathematical calculations and descriptions are taken from the papers and documentation found here: https://sites.google.com/site/fgscodes/gs
 
   Originally written in CPP, these codes have been translated to be read and executed from a native python environment. This project was undertaken as an experiment in order to see how python's automatic memory assingment and dynamic typing would affect the execution time of the CPP codes within the kuznetsov-radio repository linked above.
